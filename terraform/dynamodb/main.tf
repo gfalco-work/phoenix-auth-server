@@ -93,5 +93,6 @@ resource "aws_dynamodb_table" "product_table" {
       }
     }
   ]
-  name = "OnlineShop"
+  name = "OnlineShop_TF"
+  hash_key = "PK"
 }
