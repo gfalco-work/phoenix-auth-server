@@ -15,5 +15,5 @@ m1-terraform-provider-helper install hashicorp/template -v v2.2.0
 terraform init
 terraform validate
 terraform plan -var-file=terraform-dev.tfvars -out=tfplan
-terraform apply
+terraform apply "tfplan"
 terraform destroy -auto-approve

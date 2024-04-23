@@ -108,16 +108,15 @@ variable "healthcheck_matcher" {
 ## ECR
 ########################################################################################################################
 
-# variable "ecr_force_delete" {
-#   description = "Forces deletion of Docker images before resource is destroyed"
-#   default     = true
-#   type        = bool
-# }
-#
 # variable "hash" {
 #   description = "Task hash that simulates a unique version for every new deployment of the ECS Task"
 #   type        = string
 # }
+
+variable "image_tag_mutability" {
+  description = "Determines whether the tags associated with container images in the repository can be overwritten or not"
+  type = string
+}
 
 ########################################################################################################################
 ## ECS variables
