@@ -134,3 +134,116 @@ resource "aws_iam_role" "ecs_task_iam_role" {
     Scenario = var.scenario
   }
 }
+
+# ########################################################################################################################
+# ## IAM Role for Role to be created GitHubAction-AssumeRoleWithAction
+# ########################################################################################################################
+resource "aws_iam_openid_connect_provider" "githubOidc" {
+  url = "https://token.actions.githubusercontent.com"
+
+  client_id_list = [
+    "sts.amazonaws.com"
+  ]
+
+  thumbprint_list = ["1b511abead59c6ce207077c0bf0e0043b1382612"]
+}
+
+data "aws_iam_policy_document" "oidc_github_policy" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.githubOidc.arn]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+    condition {
+      test     = "StringLike"
+      variable = "token.actions.githubusercontent.com:sub"
+      values   = ["repo:CloudSecurityPartners/Oidc-test:*"]
+    }
+  }
+}
+
+resource "aws_iam_role" "github_role" {
+  name               = "GithubActionsRole"
+  assume_role_policy = data.aws_iam_policy_document.oidc_github_policy.json
+  inline_policy {
+    name   = "github_actions_policy"
+    policy = data.aws_iam_policy_document.ecr-ecs-publisher.json
+  }
+}
+
+data "aws_iam_policy_document" "ecr-ecs-publisher" {
+  statement {
+    effect    = "Allow"
+    actions   = ["ecr:*"]
+    resources = ["*"]
+  }
+  statement {
+    effect    = "Allow"
+    actions   = ["ecs:RegisterTaskDefinition"]
+    resources = ["*"]
+  }
+  statement {
+    effect  = "Allow"
+    actions = [
+      "ecs:UpdateService",
+      "ecs:DescribeServices"
+    ]
+    resources = ["arn:aws:ecs:eu-west-2::${var.account_id}:service/${var.namespace}_ECSCluster_${var.environment}/*"]
+  }
+  statement {
+    effect    = "Allow"
+    actions   = ["iam:PassRole"]
+    resources = [
+      "arn:aws:iam::${var.account_id}:role/${var.namespace}_ECS_TaskDefinition_${var.environment}",
+      "arn:aws:iam::${var.account_id}:role/${var.namespace}_ECS_TaskIAMRole_${var.environment}"
+    ]
+  }
+}
+
+# AmazonEC2ContainerRegistryFullAccess
+# custom inline
+# {
+#   "Version" : "2012-10-17",
+#   "Statement" : [
+#     {
+#       "Effect" : "Allow",
+#       "Action" : [
+#         "ecs:RegisterTaskDefinition",
+#         "ecs:ListTaskDefinitions",
+#         "ecs:DescribeTaskDefinition"
+#       ],
+#       "Resource" : [
+#         "*"
+#       ]
+#     },
+#     {
+#       "Sid" : "PassRolesInTaskDefinition",
+#       "Effect" : "Allow",
+#       "Action" : [
+#         "iam:PassRole"
+#       ],
+#       "Resource" : [
+#         "arn:aws:iam::${var.account_id}:role/phoenix_ECS_TaskExecutionRole_dev",
+#         "arn:aws:iam::${var.account_id}:role/phoenix_ECS_TaskIAMRole_dev"
+#       ]
+#     },
+#     {
+#       "Sid" : "DeployService",
+#       "Effect" : "Allow",
+#       "Action" : [
+#         "ecs:UpdateService",
+#         "ecs:DescribeServices"
+#       ],
+#       "Resource" : [
+#         "arn:aws:ecs:eu-west-2:730335265680:service/phoenix_ECSCluster_dev/inventory"
+#       ]
+#     }
+#   ]
+# }

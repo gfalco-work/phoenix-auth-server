@@ -11,6 +11,11 @@ variable "region" {
 ## Service variables
 ########################################################################################################################
 
+variable "account_id" {
+  description = "Account Id"
+  type        = number
+}
+
 variable "namespace" {
   description = "Namespace for resource names"
   default     = "phoenix"
