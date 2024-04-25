@@ -136,7 +136,7 @@ resource "aws_iam_role" "ecs_task_iam_role" {
 }
 
 # ########################################################################################################################
-# ## IAM Role for Role to be created GitHubAction-AssumeRoleWithAction
+# ## IAM Role for Role to be created GitHubActionRole
 # ########################################################################################################################
 resource "aws_iam_openid_connect_provider" "githubOidc" {
   url = "https://token.actions.githubusercontent.com"

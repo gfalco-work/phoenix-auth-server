@@ -41,10 +41,11 @@ variable "service_name" {
   type        = string
 }
 
-# variable "domain_name" {
-#   description = "Domain name of the service (like service.example.com)"
-#   type        = string
-# }
+variable "domain_name" {
+  description = "Domain name of the backend"
+  default     = "api.phoenix.com"
+  type        = string
+}
 
 ########################################################################################################################
 ## Cloudwatch
@@ -59,6 +60,11 @@ variable "retention_in_days" {
 ########################################################################################################################
 ## Network variables
 ########################################################################################################################
+
+variable "tld_zone_id" {
+  description = "Top level domain hosted zone ID"
+  type        = string
+}
 
 variable "az_count" {
   description = "Describes how many availability zones are used"
@@ -120,7 +126,7 @@ variable "healthcheck_matcher" {
 
 variable "image_tag_mutability" {
   description = "Determines whether the tags associated with container images in the repository can be overwritten or not"
-  type = string
+  type        = string
 }
 
 ########################################################################################################################

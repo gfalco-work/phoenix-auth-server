@@ -16,29 +16,29 @@ resource "aws_alb" "alb" {
 # ## Default HTTPS listener that blocks all traffic without valid custom origin header
 # ########################################################################################################################
 #
-# resource "aws_alb_listener" "alb_default_listener_https" {
-#   load_balancer_arn = aws_alb.alb.arn
-#   port              = 443
-#   protocol          = "HTTPS"
-#   certificate_arn   = aws_acm_certificate.alb_certificate.arn
-#   ssl_policy        = "ELBSecurityPolicy-TLS-1-2-Ext-2018-06"
-#
-#   default_action {
-#     type = "fixed-response"
-#
-#     fixed_response {
-#       content_type = "text/plain"
-#       message_body = "Access denied"
-#       status_code  = "403"
-#     }
-#   }
-#
-#   tags = {
-#     Scenario = var.scenario
-#   }
-#
-#   depends_on = [aws_acm_certificate.alb_certificate]
-# }
+resource "aws_alb_listener" "alb_default_listener_https" {
+  load_balancer_arn = aws_alb.alb.arn
+  port              = 443
+  protocol          = "HTTPS"
+  certificate_arn   = aws_acm_certificate.alb_certificate.arn
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-Ext-2018-06"
+
+  default_action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Access denied"
+      status_code  = "403"
+    }
+  }
+
+  tags = {
+    Scenario = var.scenario
+  }
+
+  depends_on = [aws_acm_certificate.alb_certificate]
+}
 
 resource "aws_alb_listener" "alb_default_listener_http" {
   load_balancer_arn = aws_alb.alb.arn
@@ -100,11 +100,12 @@ resource "aws_alb_target_group" "service_target_group" {
   protocol             = "HTTP"
   vpc_id               = aws_vpc.main.id
   deregistration_delay = 5
+  target_type          = "ip"
 
   health_check {
     healthy_threshold   = 2
     unhealthy_threshold = 2
-    interval            = 60
+    interval            = 30
     matcher             = var.healthcheck_matcher
     path                = var.healthcheck_endpoint
     port                = "traffic-port"
